@@ -1,0 +1,6 @@
+{
+  "name": "EstateHub",
+  "description": "A fully featured MERN stack real estate listing and portal with role-based buyer/agent workflows, search filtering, and property inquiry forms.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
