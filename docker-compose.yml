@@ -1,0 +1,42 @@
+services:
+
+# Backend Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+
+    image: estatehub-backend:1.0
+    container_name: estatehub-backend
+
+    env_file:
+      - ./backend/.env
+
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+
+    expose:
+      - "3000"
+    
+    restart: unless-stopped
+
+  # Frontend Service
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: /api
+
+    image: estatehub-frontend:1.0
+    container_name: estatehub-frontend
+
+    ports:
+      - "8080:80"
+     
+    depends_on:
+      - backend
+
+    restart: unless-stopped
