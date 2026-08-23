@@ -3,8 +3,8 @@ import {
   addFavorite,
   removeFavorite,
   getFavorites,
-} from '../controllers/favoritesController';
-import { protect } from '../middleware/authMiddleware';
+} from '../controllers/favoritesController.js';
+import { protect } from '../middleware/authMiddleware.js';
 
 const router = Router();
 

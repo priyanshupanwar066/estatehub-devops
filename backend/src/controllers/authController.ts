@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import User from '../models/User';
+import User from '../models/User.js';
 
 // Helper to generate JWT
 const generateToken = (payload: { id: string; name: string; email: string; role: string }): string => {

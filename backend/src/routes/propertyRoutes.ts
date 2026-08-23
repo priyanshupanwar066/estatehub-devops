@@ -6,9 +6,9 @@ import {
   getPropertyById,
   updateProperty,
   deleteProperty,
-} from '../controllers/propertyController';
-import { protect, authorize } from '../middleware/authMiddleware';
-import { validateRequest } from '../middleware/validationMiddleware';
+} from '../controllers/propertyController.js';
+import { protect, authorize } from '../middleware/authMiddleware.js';
+import { validateRequest } from '../middleware/validationMiddleware.js';
 
 const router = Router();
 

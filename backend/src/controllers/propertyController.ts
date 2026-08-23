@@ -1,6 +1,6 @@
 import { Response, NextFunction } from 'express';
-import Property from '../models/Property';
-import { AuthRequest } from '../middleware/authMiddleware';
+import Property from '../models/Property.js';
+import { AuthRequest } from '../middleware/authMiddleware.js';
 
 // Create a property
 export const createProperty = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {

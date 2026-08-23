@@ -1,7 +1,7 @@
 import { Response, NextFunction } from 'express';
-import Inquiry from '../models/Inquiry';
-import Property from '../models/Property';
-import { AuthRequest } from '../middleware/authMiddleware';
+import Inquiry from '../models/Inquiry.js';
+import Property from '../models/Property.js';
+import { AuthRequest } from '../middleware/authMiddleware.js';
 
 // Submit an inquiry for a property
 export const createInquiry = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {

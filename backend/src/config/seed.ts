@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
-import User from '../models/User';
-import Property from '../models/Property';
+import User from '../models/User.js';
+import Property from '../models/Property.js';
 
 const IMAGES = {
   apartment: [

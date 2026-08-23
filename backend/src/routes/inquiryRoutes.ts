@@ -1,9 +1,9 @@
 import { Router, Response, NextFunction } from 'express';
 import { body } from 'express-validator';
-import { createInquiry, getInquiries } from '../controllers/inquiryController';
-import { validateRequest } from '../middleware/validationMiddleware';
+import { createInquiry, getInquiries } from '../controllers/inquiryController.js';
+import { validateRequest } from '../middleware/validationMiddleware.js';
 import jwt from 'jsonwebtoken';
-import { AuthRequest, protect, authorize } from '../middleware/authMiddleware';
+import { AuthRequest, protect, authorize } from '../middleware/authMiddleware.js';
 
 const router = Router();
 
