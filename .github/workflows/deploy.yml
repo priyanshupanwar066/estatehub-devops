@@ -14,42 +14,98 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
       - name: Checkout code
         uses: actions/checkout@v4
 
+
+      # 2. Login to Docker Hub
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::993412842733:role/EstateHub-GitHubActions-EKS
-          aws-region: ap-south-1
 
-      - name: Test AWS connection
-        run: aws sts get-caller-identity
-
+      # 3. Build frontend Docker image
       - name: Build frontend image
         run: |
           docker build \
             -t ${{ secrets.DOCKERHUB_USERNAME }}/estatehub-frontend:${{ github.sha }} \
             ./frontend
 
+
+      # 4. Build backend Docker image
       - name: Build backend image
         run: |
           docker build \
             -t ${{ secrets.DOCKERHUB_USERNAME }}/estatehub-backend:${{ github.sha }} \
             ./backend
 
+
+      # 5. Push frontend image
       - name: Push frontend image
         run: |
           docker push \
             ${{ secrets.DOCKERHUB_USERNAME }}/estatehub-frontend:${{ github.sha }}
 
+      # 6. Push backend image
       - name: Push backend image
         run: |
           docker push \
             ${{ secrets.DOCKERHUB_USERNAME }}/estatehub-backend:${{ github.sha }}
+
+      # 7. Configure AWS using OIDC
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::993412842733:role/EstateHub-GitHubActions-EKS
+          aws-region: ap-south-1
+
+
+      # 8. Test AWS authentication
+      - name: Test AWS connection
+        run: |
+          aws sts get-caller-identity
+
+
+      # 9. Configure kubectl for EKS
+      - name: Configure kubectl
+        run: |
+          aws eks update-kubeconfig \
+            --region ap-south-1 \
+            --name estatehub-cluster
+
+
+      # 10. Test Kubernetes access
+      - name: Test EKS connection
+        run: |
+          kubectl get pods -n estatehub
+
+
+      # 11. Deploy new images using Helm
+      - name: Deploy to EKS
+        run: |
+          helm upgrade --install estatehub ./helm/estatehub \
+            --namespace estatehub \
+            --create-namespace \
+            --set-string images.frontend.tag=${{ github.sha }} \
+            --set-string images.backend.tag=${{ github.sha }} \
+            --wait \
+            --timeout 5m
+
+
+      # 12. Verify deployment
+      - name: Verify deployment
+        run: |
+          kubectl get pods -n estatehub
+          kubectl get deployments -n estatehub
+          kubectl get services -n estatehub
+
+          kubectl rollout status deployment/estatehub-frontend \
+            -n estatehub \
+            --timeout=5m
+
+          kubectl rollout status deployment/estatehub-backend \
+            -n estatehub \
+            --timeout=5m
