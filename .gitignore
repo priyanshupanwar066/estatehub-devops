@@ -1,8 +1,25 @@
-node_modules/
-build/
-dist/
-coverage/
-.DS_Store
-*.log
-.env*
+# Environment files
+.env
+.env.*
 !.env.example
+
+# Dependencies
+node_modules/
+
+# Build
+dist/
+build/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+
+# Kubernetes
+.kube/
+kubeconfig
+
+# Secrets
+*.secret.yaml
+secrets.yaml

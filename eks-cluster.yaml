@@ -1,0 +1,23 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: estatehub-cluster
+  region: ap-south-1
+  version: "1.33"
+
+managedNodeGroups:
+  - name: estatehub-nodegroup
+    instanceType: t3.medium
+    desiredCapacity: 2
+    minSize: 1
+    maxSize: 3
+    volumeSize: 20
+    volumeType: gp3
+
+    labels:
+      role: estatehub
+
+    tags:
+      Project: EstateHub
+      Environment: production

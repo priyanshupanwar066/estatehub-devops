@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: estatehub-frontend
+  namespace: estatehub
+  labels:
+    app: estatehub-frontend
+
+spec:
+  replicas: {{ .Values.replicaCount.frontend }}
+
+  selector:
+    matchLabels:
+      app: estatehub-frontend
+
+  template:
+    metadata:
+      labels:
+        app: estatehub-frontend
+
+    spec:
+      containers:
+        - name: frontend
+          image: "{{ .Values.images.frontend.repository }}:{{ .Values.images.frontend.tag }}"
+          imagePullPolicy: {{ .Values.images.frontend.pullPolicy }}
+
+          ports:
+            - containerPort: {{ .Values.frontend.containerPort }}

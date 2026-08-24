@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: estatehub-backend
+  namespace: estatehub
+  labels:
+    app: estatehub-backend
+spec:
+  replicas: {{ .Values.replicaCount.backend }}
+
+  selector:
+    matchLabels:
+      app: estatehub-backend
+
+  template:
+    metadata:
+      labels:
+        app: estatehub-backend
+
+    spec:
+      containers:
+        - name: estatehub-backend
+          image: "{{ .Values.images.backend.repository }}:{{ .Values.images.backend.tag }}"
+          imagePullPolicy: {{ .Values.images.backend.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.backend.containerPort }}
+
+          env:
+            - name: NODE_ENV
+              value: {{ .Values.env.nodeEnv | quote }}
+
+            - name: PORT
+              value: {{ .Values.backend.containerPort | quote }}
+
+            - name: MONGODB_URI
+              valueFrom:
+                secretKeyRef:
+                  name: estatehub-secret
+                  key: MONGODB_URI
+
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: estatehub-secret
+                  key: JWT_SECRET

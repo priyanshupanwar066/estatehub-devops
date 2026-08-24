@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: estatehub-backend
+  namespace: estatehub
+  labels:
+    app: estatehub-backend
+
+spec:
+  type: {{ .Values.backend.service.type}}
+
+  selector:
+    app: estatehub-backend
+
+  ports:
+    - protocol: TCP
+      port: {{ .Values.backend.service.port }}
+      targetPort: {{ .Values.backend.service.targetPort }}

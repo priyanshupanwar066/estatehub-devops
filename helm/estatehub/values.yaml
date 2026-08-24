@@ -1,0 +1,35 @@
+replicaCount:
+  frontend: 2
+  backend: 2
+
+images:
+  frontend:
+    repository: priyanshu066/estatehub-frontend
+    tag: "1.1"
+    pullPolicy: IfNotPresent
+
+  backend:
+    repository: priyanshu066/estatehub-backend
+    tag: "1.0"
+    pullPolicy: IfNotPresent
+
+frontend:
+  containerPort: 80
+  service:
+    type: LoadBalancer
+    port: 80
+    targetPort: 80
+
+backend:
+  containerPort: 3000
+  service:
+    type: ClusterIP
+    port: 3000
+    targetPort: 3000
+
+secrets:
+  mongodbUri: ""
+  jwtSecret: ""
+
+env:
+  nodeEnv: production
