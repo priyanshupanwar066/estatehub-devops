@@ -1,6 +1,15 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, useMotionValue, animate, useReducedMotion, AnimatePresence } from 'framer-motion';
+import {
+  motion,
+  useMotionValue,
+  useMotionTemplate,
+  useSpring,
+  useTransform,
+  animate,
+  useReducedMotion,
+  AnimatePresence,
+} from 'framer-motion';
 import api from '../lib/api';
 import { Property } from '../types';
 import SearchFilter from '../components/SearchFilter';
@@ -9,25 +18,33 @@ import { useAuth } from '../context/AuthContext';
 import {
   Loader2, AlertCircle, ShieldCheck, CheckCircle2,
   TrendingUp, Calculator, Inbox, ArrowUpRight, Search, FileCheck2, KeyRound,
-  Quote, Building2, ChevronLeft, ChevronRight, Sparkles, MapPin, Star
+  Quote, Building2, ChevronLeft, ChevronRight, Sparkles, MapPin, Star, Flame
 } from 'lucide-react';
 
 /**
  * REDESIGN NOTES
  * ---------------
- * New direction: "Midnight & Citrus" — warm paper background, near-black ink surfaces,
- * a vivid coral/gold accent pair, animated with framer-motion (already in your
- * node_modules, so no new install needed).
+ * "Midnight & Citrus" — warm paper background, near-black ink surfaces,
+ * a vivid coral/gold accent pair, animated with framer-motion.
  *
- * Fonts: switched away from a custom Fraunces import to Tailwind's built-in `font-serif`
- * stack, so nothing needs to change in index.html — it works out of the box with your
- * existing Inter + JetBrains Mono setup from index.css.
+ * Fonts: Tailwind's built-in `font-serif` stack — no changes needed to index.html,
+ * works with your existing Inter + JetBrains Mono setup from index.css.
  *
  * Tokens:  ink #12141C   paper #FAF8F5   card #FFFFFF   coral #FF6B35   gold #FBBF24
  *          teal #14B8A6   line #E7E2DA   muted (labels) #8A867C   copy (AA body) #55534C
  *
  * Motion respects prefers-reduced-motion via framer-motion's useReducedMotion() hook
- * (JS-level check) and a CSS media query on the marquee (belt-and-suspenders).
+ * (JS-level check) and CSS media queries on every custom keyframe animation
+ * (belt-and-suspenders).
+ *
+ * HERO v2 additions:
+ *  - Cursor-reactive coral spotlight (radial gradient tracking the pointer)
+ *  - 3D tilt on the photo collage, driven by the same pointer position
+ *  - Cycling headline word ("home" / "yours" / "right" / "permanent")
+ *  - "Trending searches" ticker under the CTAs
+ *  - Ambient diagonal light beam sweeping across the dark hero on a loop
+ *  - Slow-"breathing" background grid opacity
+ *  All of the above are skipped/frozen under prefers-reduced-motion.
  *
  * KNOWN DATA ISSUE carried over from before: "Cities covered" will read 0 if your API's
  * property objects don't expose a top-level `city` field — check cityCount below against
@@ -36,6 +53,10 @@ import {
  * TESTIMONIALS below are still placeholder copy with invented names — swap for real
  * reviews (or a `/testimonials` endpoint) before this goes live; presenting invented
  * quotes as real customer testimonials is misleading once it's public.
+ *
+ * TRENDING SEARCHES in the hero ticker are also hardcoded placeholder strings —
+ * same concern as testimonials. Wire to real search-frequency data before shipping,
+ * or drop the ticker — a "live" indicator that isn't live is worse than none at all.
  */
 
 interface FilterState {
@@ -82,6 +103,12 @@ const TESTIMONIALS = [
     role: 'First-time buyer, Bengaluru',
   },
 ];
+
+// Cycles in the hero headline — keep entries short, all read naturally before the "."
+const HEADLINE_WORDS = ['home', 'yours', 'right', 'permanent'];
+
+// Hero "trending searches" ticker — placeholder copy, see note above.
+const TRENDING_SEARCHES = ['2BHK in Pune', 'Villas in Goa', 'Studio in Bengaluru', 'Plots in Greater Noida'];
 
 const formatINR = (value: number): string => {
   if (!Number.isFinite(value)) return '—';
@@ -150,6 +177,37 @@ const HomeListings: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedTypeTab, setSelectedTypeTab] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState<number>(1);
+
+  // --- Hero interactivity: cursor-reactive spotlight + collage tilt ---
+  const spotlightX = useMotionValue(300);
+  const spotlightY = useMotionValue(170);
+  const tiltSpringX = useSpring(spotlightX, { stiffness: 60, damping: 20 });
+  const tiltSpringY = useSpring(spotlightY, { stiffness: 60, damping: 20 });
+  const spotlightBg = useMotionTemplate`radial-gradient(560px circle at ${tiltSpringX}px ${tiltSpringY}px, rgba(255,107,53,0.16), transparent 55%)`;
+  const collageRotateX = useTransform(tiltSpringY, [0, 340], [6, -6]);
+  const collageRotateY = useTransform(tiltSpringX, [0, 700], [-6, 6]);
+
+  const handleHeroMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    spotlightX.set(e.clientX - rect.left);
+    spotlightY.set(e.clientY - rect.top);
+  };
+
+  // --- Cycling headline word ---
+  const [wordIndex, setWordIndex] = useState(0);
+  useEffect(() => {
+    if (reducedMotion) return;
+    const id = setInterval(() => setWordIndex((i) => (i + 1) % HEADLINE_WORDS.length), 2400);
+    return () => clearInterval(id);
+  }, [reducedMotion]);
+
+  // --- Trending search ticker ---
+  const [trendIndex, setTrendIndex] = useState(0);
+  useEffect(() => {
+    if (reducedMotion) return;
+    const id = setInterval(() => setTrendIndex((i) => (i + 1) % TRENDING_SEARCHES.length), 2800);
+    return () => clearInterval(id);
+  }, [reducedMotion]);
 
   const fetchProperties = async (filters?: FilterState) => {
     setLoading(true);
@@ -261,12 +319,40 @@ const HomeListings: React.FC = () => {
         @keyframes gradient-pan { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
         .animated-gradient { background-size: 200% 200%; animation: gradient-pan 8s ease infinite; }
         @media (prefers-reduced-motion: reduce) { .animated-gradient { animation: none; } }
+        @keyframes beam-sweep {
+          0% { transform: translateX(-150%) skewX(-20deg); }
+          100% { transform: translateX(250%) skewX(-20deg); }
+        }
+        .beam-sweep { animation: beam-sweep 8s ease-in-out infinite; animation-delay: 1.5s; }
+        @media (prefers-reduced-motion: reduce) { .beam-sweep { animation: none; } }
+        @keyframes grid-breathe { 0%, 100% { opacity: 0.05; } 50% { opacity: 0.09; } }
+        .grid-breathe { animation: grid-breathe 6s ease-in-out infinite; }
+        @media (prefers-reduced-motion: reduce) { .grid-breathe { animation: none; } }
       `}</style>
 
       <div className="pb-16">
 
         {/* ============ HERO ============ */}
-        <section id="hero-banner" className="relative bg-[#12141C] overflow-hidden">
+        <section
+          id="hero-banner"
+          onMouseMove={reducedMotion ? undefined : handleHeroMouseMove}
+          className="relative bg-[#12141C] overflow-hidden"
+        >
+          {/* cursor-reactive coral spotlight */}
+          {!reducedMotion && (
+            <motion.div
+              className="pointer-events-none absolute inset-0 z-[1]"
+              style={{ background: spotlightBg }}
+              aria-hidden="true"
+            />
+          )}
+
+          {/* ambient light beam sweeping across the hero */}
+          <div
+            className="beam-sweep pointer-events-none absolute inset-y-0 w-1/3 opacity-[0.05] bg-gradient-to-r from-transparent via-white to-transparent z-[1]"
+            aria-hidden="true"
+          ></div>
+
           {/* decorative floating blobs */}
           <motion.div
             aria-hidden="true"
@@ -283,7 +369,7 @@ const HomeListings: React.FC = () => {
             transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
           />
           <div
-            className="absolute inset-0 opacity-[0.05]"
+            className="grid-breathe absolute inset-0"
             style={{
               backgroundImage: 'linear-gradient(to right, #FAF8F5 1px, transparent 1px), linear-gradient(to bottom, #FAF8F5 1px, transparent 1px)',
               backgroundSize: '48px 48px',
@@ -291,7 +377,7 @@ const HomeListings: React.FC = () => {
             aria-hidden="true"
           ></div>
 
-          <div className={`relative ${CONTAINER} pt-14 pb-10 md:pt-20 md:pb-14 grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 items-center`}>
+          <div className={`relative z-[2] ${CONTAINER} pt-14 pb-10 md:pt-20 md:pb-14 grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 items-center`}>
             <div>
               <motion.div
                 initial={reducedMotion ? undefined : { opacity: 0, y: -10 }}
@@ -311,11 +397,22 @@ const HomeListings: React.FC = () => {
                 transition={{ duration: 0.6, delay: 0.05, ease: EASE }}
                 className="font-serif text-[#FAF8F5] text-4xl sm:text-5xl md:text-6xl font-medium tracking-tight leading-[1.05] max-w-xl"
               >
-                Find the address you'll actually{' '}
-                <span className="italic bg-gradient-to-r from-[#FF6B35] to-[#FBBF24] bg-clip-text text-transparent">
-                  stay
-                </span>{' '}
-                for.
+                Find the address that finally feels like{' '}
+                <span className="relative inline-block bg-gradient-to-r from-[#FF6B35] to-[#FBBF24] bg-clip-text text-transparent min-w-[7ch] align-baseline">
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={HEADLINE_WORDS[wordIndex]}
+                      initial={reducedMotion ? undefined : { opacity: 0, y: 10, filter: 'blur(4px)' }}
+                      animate={reducedMotion ? undefined : { opacity: 1, y: 0, filter: 'blur(0px)' }}
+                      exit={reducedMotion ? undefined : { opacity: 0, y: -10, filter: 'blur(4px)' }}
+                      transition={{ duration: 0.4, ease: EASE }}
+                      className="inline-block italic"
+                    >
+                      {HEADLINE_WORDS[wordIndex]}
+                    </motion.span>
+                  </AnimatePresence>
+                </span>
+                .
               </motion.h1>
 
               <motion.p
@@ -348,12 +445,39 @@ const HomeListings: React.FC = () => {
                   List a property instead
                 </Link>
               </motion.div>
+
+              {/* live trending-search ticker */}
+              <motion.div
+                initial={reducedMotion ? undefined : { opacity: 0 }}
+                animate={reducedMotion ? undefined : { opacity: 1 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                className="flex items-center gap-2 mt-6 text-[11px] font-mono"
+              >
+                <Flame className="w-3.5 h-3.5 text-[#FF6B35]" aria-hidden="true" />
+                <span className="text-[#8A867C] uppercase tracking-wider">Trending:</span>
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={TRENDING_SEARCHES[trendIndex]}
+                    initial={reducedMotion ? undefined : { opacity: 0, y: 6 }}
+                    animate={reducedMotion ? undefined : { opacity: 1, y: 0 }}
+                    exit={reducedMotion ? undefined : { opacity: 0, y: -6 }}
+                    transition={{ duration: 0.3 }}
+                    className="text-[#E8C97A] font-medium"
+                  >
+                    {TRENDING_SEARCHES[trendIndex]}
+                  </motion.span>
+                </AnimatePresence>
+              </motion.div>
             </div>
 
-            {/* Decorative floating photo collage — desktop only. Two overlapping frames
-                anchored to the same corner so they read as one composition, not scattered
-                pieces; the badge sits right on the seam between them. */}
-            <div className="relative hidden lg:block w-full h-[340px]">
+            {/* Decorative floating photo collage — desktop only, now with cursor-reactive
+                3D tilt driven by the same pointer position as the spotlight. Two overlapping
+                frames anchored to the same corner so they read as one composition; the badge
+                sits on the seam between them. */}
+            <motion.div
+              className="relative hidden lg:block w-full h-[340px]"
+              style={reducedMotion ? undefined : { rotateX: collageRotateX, rotateY: collageRotateY, transformPerspective: 1000 }}
+            >
               <motion.div
                 className="absolute top-0 right-0 w-60 h-72 rounded-3xl overflow-hidden shadow-2xl rotate-[3deg] z-10"
                 animate={reducedMotion ? undefined : { y: [0, -8, 0] }}
@@ -392,11 +516,11 @@ const HomeListings: React.FC = () => {
                   <div className="text-[10px] text-[#8A867C] mt-0.5">by EstateHub</div>
                 </div>
               </motion.div>
-            </div>
+            </motion.div>
           </div>
 
           {/* SIGNATURE ELEMENT: animated stat strip */}
-          <div className="relative border-t border-white/10 bg-[#0C0E13]">
+          <div className="relative z-[2] border-t border-white/10 bg-[#0C0E13]">
             <div className={`${CONTAINER} grid grid-cols-2 sm:grid-cols-4 divide-x divide-white/10`}>
               {[
                 { label: 'Active listings', value: properties.length, icon: CheckCircle2, format: undefined },
