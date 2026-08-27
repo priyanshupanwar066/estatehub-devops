@@ -434,10 +434,7 @@ const HomeListings: React.FC = () => {
               </motion.div>
             </div>
 
-            {/* Decorative floating photo collage — desktop only, now with cursor-reactive
-                3D tilt driven by the same pointer position as the spotlight. Two overlapping
-                frames anchored to the same corner so they read as one composition; the badge
-                sits on the seam between them. */}
+         
             <motion.div
               className="relative hidden lg:block w-full h-[340px]"
               style={reducedMotion ? undefined : { rotateX: collageRotateX, rotateY: collageRotateY, transformPerspective: 1000 }}
