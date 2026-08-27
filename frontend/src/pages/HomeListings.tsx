@@ -21,43 +21,7 @@ import {
   Quote, Building2, ChevronLeft, ChevronRight, Sparkles, MapPin, Star, Flame
 } from 'lucide-react';
 
-/**
- * REDESIGN NOTES
- * ---------------
- * "Midnight & Citrus" — warm paper background, near-black ink surfaces,
- * a vivid coral/gold accent pair, animated with framer-motion.
- *
- * Fonts: Tailwind's built-in `font-serif` stack — no changes needed to index.html,
- * works with your existing Inter + JetBrains Mono setup from index.css.
- *
- * Tokens:  ink #12141C   paper #FAF8F5   card #FFFFFF   coral #FF6B35   gold #FBBF24
- *          teal #14B8A6   line #E7E2DA   muted (labels) #8A867C   copy (AA body) #55534C
- *
- * Motion respects prefers-reduced-motion via framer-motion's useReducedMotion() hook
- * (JS-level check) and CSS media queries on every custom keyframe animation
- * (belt-and-suspenders).
- *
- * HERO v2 additions:
- *  - Cursor-reactive coral spotlight (radial gradient tracking the pointer)
- *  - 3D tilt on the photo collage, driven by the same pointer position
- *  - Cycling headline word ("home" / "yours" / "right" / "permanent")
- *  - "Trending searches" ticker under the CTAs
- *  - Ambient diagonal light beam sweeping across the dark hero on a loop
- *  - Slow-"breathing" background grid opacity
- *  All of the above are skipped/frozen under prefers-reduced-motion.
- *
- * KNOWN DATA ISSUE carried over from before: "Cities covered" will read 0 if your API's
- * property objects don't expose a top-level `city` field — check cityCount below against
- * your actual schema (e.g. `p.address.city`) and update the accessor if needed.
- *
- * TESTIMONIALS below are still placeholder copy with invented names — swap for real
- * reviews (or a `/testimonials` endpoint) before this goes live; presenting invented
- * quotes as real customer testimonials is misleading once it's public.
- *
- * TRENDING SEARCHES in the hero ticker are also hardcoded placeholder strings —
- * same concern as testimonials. Wire to real search-frequency data before shipping,
- * or drop the ticker — a "live" indicator that isn't live is worse than none at all.
- */
+
 
 interface FilterState {
   search: string;
