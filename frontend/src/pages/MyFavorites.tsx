@@ -6,17 +6,6 @@ import PropertyCard from '../components/PropertyCard';
 import { Loader2, Heart, AlertCircle, LogIn, Search } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
-/**
- * Design tokens (shared with HomeListings / PropertyDetail):
- * ink #161A20   paper #F7F3EC   brick #AD4E33   moss #4C5F4E   stone #83786C   line #E4DED0
- *
- * NOTE ON BEHAVIOR: the previous version of this page called
- * `api.delete('/properties/:id')` for the card's remove action, which deletes
- * the *listing itself* rather than unfavoriting it — dangerous on a favorites
- * page. This version calls `api.delete('/favorites/:id')` instead, which only
- * removes the property from this user's saved list. Adjust the endpoint below
- * if your backend names the favorites route differently.
- */
 
 const MyFavorites: React.FC = () => {
   const { user } = useAuth();
