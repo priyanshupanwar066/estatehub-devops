@@ -21,7 +21,7 @@ const AgentDashboard: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      // Fetch all properties to client-filter the ones listed by this agent
+      
       const propRes = await api.get('/properties');
       const allProps: Property[] = propRes.data;
       const agentProps = allProps.filter((p) => {
