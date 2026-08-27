@@ -24,8 +24,7 @@ interface PropertyFormProps {
   titleText: string;
 }
 
-// Injects the two Google Fonts this page uses (serif display + sans body)
-// exactly once, so the component stays a self-contained drop-in.
+
 const useFonts = () => {
   useEffect(() => {
     const id = 'property-form-fonts';
