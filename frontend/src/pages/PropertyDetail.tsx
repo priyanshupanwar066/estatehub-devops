@@ -20,16 +20,7 @@ import {
   Heart,
 } from 'lucide-react';
 
-/**
- * Design tokens (shared with HomeListings / MyFavorites):
- * ink #161A20   paper #F7F3EC   brick #AD4E33   moss #4C5F4E   stone #83786C   line #E4DED0
- * Fonts: Fraunces (headings), Inter (body), IBM Plex Mono (data/labels)
- *
- * FAVORITES API ASSUMPTION: this calls POST /favorites/:propertyId to add and
- * DELETE /favorites/:propertyId to remove, and expects the property payload to
- * optionally include `isFavorited`. Adjust the two calls in handleToggleFavorite
- * if your backend's favorites route is shaped differently.
- */
+
 
 const PropertyDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
