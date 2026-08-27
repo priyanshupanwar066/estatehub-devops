@@ -9,8 +9,7 @@ interface PropertyCardProps {
   onDelete?: (id: string) => void;
 }
 
-// Injects the two Google Fonts used across the listing UI (serif display +
-// sans body), matching PropertyForm. No-ops if already loaded on the page.
+
 const useFonts = () => {
   useEffect(() => {
     const id = 'property-form-fonts';
